@@ -222,7 +222,7 @@
     {
       "name": "Rails Goat",
       "description": "A vulnerable Ruby on Rails app for security training.",
-      "url": "https://railsgoat.security/",
+      "url": "https://github.com/OWASP/railsgoat",
       "technologies": [
         "ruby-on-rails",
         "sqlite",
