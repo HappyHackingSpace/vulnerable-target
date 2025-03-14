@@ -56,7 +56,7 @@ var rootCmd = &cobra.Command{
 	Use:     "vt",
 	Short:   "Create vulnerable environment",
 	Version: "1.0.0",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		logger.Init()
 	},
 	SilenceErrors: true,
@@ -64,12 +64,19 @@ var rootCmd = &cobra.Command{
 		settings := config.GetSettings()
 
 		if len(args) == 0 && cmd.Flags().NFlag() == 0 {
-			cmd.Help()
+			if err := cmd.Help(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error displaying help: %v\n", err)
+				os.Exit(1)
+			}
 			os.Exit(0)
 			return
 		}
 
-		if listTemplates, _ := cmd.Flags().GetBool("list-templates"); listTemplates {
+		listTemplates, err := cmd.Flags().GetBool("list-templates")
+		if err != nil {
+			log.Fatal().Msgf("Error getting list-templates flag: %v", err)
+		}
+		if listTemplates {
 			templates.List()
 			os.Exit(0)
 			return

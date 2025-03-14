@@ -1,0 +1,16 @@
+---
+
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+  document-start: enable
+  truthy:
+    check-keys: false
+
+ignore: |
+  .git/
+  node_modules/
+  vendor/

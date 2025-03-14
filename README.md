@@ -42,11 +42,11 @@ We welcome contributions from everyone! Here's how you can contribute:
 
 ### Adding a New Vulnerable Target
 
-1. **Fork the Repository**  
+1. **Fork the Repository**
    Start by forking our [vulnerable-target repository](https://github.com/HappyHackingSpace/vulnerable-target).
 
-2. **Create a New Target Entry**  
-   - Add a new entry to the `vulnerable-target-list.json` file.  
+2. **Create a New Target Entry**
+   - Add a new entry to the `vulnerable-target-list.json` file.
    - Each entry must follow this structure:
      ```json
      {
@@ -58,7 +58,7 @@ We welcome contributions from everyone! Here's how you can contribute:
      }
      ```
 
-3. **Submit a Pull Request**  
+3. **Submit a Pull Request**
    Open a pull request with your changes.
 
 

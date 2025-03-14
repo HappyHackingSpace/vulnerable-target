@@ -64,10 +64,16 @@ func Run() {
 				log.Fatal().Msgf("%v", err)
 			}
 		}
-		containerId, err := createContainer(imageName, apiClient, ctx, exposedPorts, portBindings)
+		containerID, err := createContainer(ctx, imageName, apiClient, exposedPorts, portBindings)
 		if err != nil {
-			apiClient.ContainerRemove(ctx, containerId, container.RemoveOptions{})
-			log.Warn().Msgf("Container (%s) is deleted", containerId)
+			if containerID != "" {
+				rmErr := apiClient.ContainerRemove(ctx, containerID, container.RemoveOptions{})
+				if rmErr != nil {
+					log.Warn().Msgf("Failed to remove container (%s): %v", containerID, rmErr)
+				} else {
+					log.Warn().Msgf("Container (%s) is deleted", containerID)
+				}
+			}
 			log.Fatal().Msgf("%v", err)
 		}
 	} else {
@@ -100,16 +106,22 @@ func Run() {
 			log.Fatal().Msgf("%v", err)
 		}
 
-		containerId, err := createContainer(imageName, apiClient, ctx, exposedPorts, portBindings)
+		containerID, err := createContainer(ctx, imageName, apiClient, exposedPorts, portBindings)
 		if err != nil {
-			apiClient.ContainerRemove(ctx, containerId, container.RemoveOptions{})
-			log.Warn().Msgf("Container (%s) is deleted", containerId)
+			if containerID != "" {
+				rmErr := apiClient.ContainerRemove(ctx, containerID, container.RemoveOptions{})
+				if rmErr != nil {
+					log.Warn().Msgf("Failed to remove container (%s): %v", containerID, rmErr)
+				} else {
+					log.Warn().Msgf("Container (%s) is deleted", containerID)
+				}
+			}
 			log.Fatal().Msgf("%v", err)
 		}
 	}
 }
 
-func createContainer(image string, apiClient *client.Client, ctx context.Context, exposedPorts nat.PortSet, portBindings nat.PortMap) (string, error) {
+func createContainer(ctx context.Context, image string, apiClient *client.Client, exposedPorts nat.PortSet, portBindings nat.PortMap) (string, error) {
 	containerCreate, err := apiClient.ContainerCreate(ctx, &container.Config{
 		Image:        image,
 		ExposedPorts: exposedPorts,

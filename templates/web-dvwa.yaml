@@ -1,10 +1,13 @@
+---
+
 id: dvwa
 
 info:
   name: Damn Vulnerable Web App (DVWA)
   author: hhsteam
   description: |
-    The aim of DVWA is to practice some of the most common web vulnerability, with various difficultly levels, with a simple straightforward interface.
+    The aim of DVWA is to practice some of the most common web vulnerability,
+    with various difficultly levels, with a simple straightforward interface.
   references:
     - https://github.com/digininja/DVWA
   technologies:
@@ -24,4 +27,3 @@ providers:
 
     content: |
       IMAGE:vulnerables/web-dvwa
-

@@ -1,3 +1,5 @@
+---
+
 id: vulnerable-target
 
 info:
@@ -14,19 +16,19 @@ info:
     - owasp
     - web
     - vulnerabilities
-  metadata: #additional metadata for the template
+  metadata:  # additional metadata for the template
 
 
 providers:
-  online: # intentionally left vulnerable instances
+  online:  # intentionally left vulnerable instances
     targets:
       - vulnerabletarget.com
   llm:
     content: |
       # prompt:
-      # model: 
+      # model:
   docker:
-    ports: # add ports for container
+    ports:  # add ports for container
       "hostPort/protocol": "containerPort"
     content: |
       # (Optional) full Dockerfile content to build from scratch
@@ -43,7 +45,7 @@ providers:
           ports:
             - "80:80"
           # ...
-  
+
   # For instance: CloudFormation template, Terraform snippet, or other cloud providers/services
   aws:
     content: |

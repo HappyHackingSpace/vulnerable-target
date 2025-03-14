@@ -33,7 +33,7 @@ type ProviderConfig struct {
 	Teardown string            `yaml:"teardown,omitempty"`
 }
 
-var Templates map[string]Template = make(map[string]Template)
+var Templates = make(map[string]Template)
 
 func Init() {
 	wd, err := os.Getwd()
