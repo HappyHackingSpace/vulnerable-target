@@ -1,0 +1,157 @@
+id: bwapp-target
+info:
+  name: bWAPP
+  author: hhsteam
+  description: |
+    Web application with over 100 vulnerabilities for testing.
+  references:
+    - http://www.itsecgames.com
+  technologies:
+    - php
+    - mysql
+  tags:
+    - owasp
+    - web
+    - vulnerabilities
+  metadata: {}
+providers:
+  online:
+    targets:
+      - itsecgames.com
+  llm:
+    content: |
+      # prompt:
+      # model: 
+  docker:
+    ports:
+      "80/tcp": "80"
+    content: |
+      FROM php:7.4-apache
+      RUN docker-php-ext-install mysqli pdo pdo_mysql
+      RUN apt-get update && apt-get install -y git
+      RUN git clone https://github.com/bwapp/bwapp.git /var/www/html/
+      RUN chown -R www-data:www-data /var/www/html/
+  docker_compose:
+    content: |
+      version: '3.3'
+      services:
+        app:
+          image: bwapp:latest
+          ports:
+            - "80:80"
+          environment:
+            - MYSQL_HOST=db
+            - MYSQL_USER=bwapp
+            - MYSQL_PASSWORD=password
+            - MYSQL_DATABASE=bwapp
+        db:
+          image: mysql:5.7
+          environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=bwapp
+            - MYSQL_USER=bwapp
+            - MYSQL_PASSWORD=password
+  aws:
+    content: |
+      # CloudFormation snippet
+      Resources:
+        BwappInstance:
+          Type: AWS::EC2::Instance
+          Properties:
+            InstanceType: t2.micro
+            ImageId: ami-0c55b159cbfafe1f0
+            SecurityGroups:
+              - !Ref BwappSecurityGroup
+            UserData:
+              Fn::Base64: !Sub |
+                #!/bin/bash
+                apt-get update
+                apt-get install -y docker.io
+                docker pull vulnerables/web-dvwa
+                docker run -d -p 80:80 vulnerables/web-dvwa
+  gcp:
+    content: |
+      # Terraform snippet for GCP
+      resource "google_compute_instance" "bwapp" {
+        name         = "bwapp-instance"
+        machine_type = "e2-micro"
+        zone         = "us-central1-a"
+        
+        boot_disk {
+          initialize_params {
+            image = "debian-cloud/debian-10"
+          }
+        }
+        
+        network_interface {
+          network = "default"
+          access_config {}
+        }
+        
+        metadata_startup_script = <<-EOF
+          #!/bin/bash
+          apt-get update
+          apt-get install -y docker.io
+          docker pull vulnerables/web-dvwa
+          docker run -d -p 80:80 vulnerables/web-dvwa
+        EOF
+      }
+  azure:
+    content: |
+      # ARM template snippet
+      {
+        "resources": [
+          {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "bwappVM",
+            "apiVersion": "2021-03-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+              "hardwareProfile": {
+                "vmSize": "Standard_B1s"
+              },
+              "storageProfile": {
+                "imageReference": {
+                  "publisher": "Canonical",
+                  "offer": "UbuntuServer",
+                  "sku": "18.04-LTS",
+                  "version": "latest"
+                }
+              },
+              "osProfile": {
+                "computerName": "bwapp",
+                "adminUsername": "azureuser"
+              }
+            }
+          }
+        ]
+      }
+  nix:
+    content: |
+      { pkgs ? import <nixpkgs> {} }:
+      pkgs.stdenv.mkDerivation {
+        name = "bwapp-env";
+        buildInputs = with pkgs; [
+          php
+          php.packages.composer
+          mysql
+          apacheHttpd
+        ];
+        shellHook = ''
+          echo "bWAPP development environment ready"
+        '';
+      }
+  custom:
+    setup: |
+      #!/bin/bash
+      # Set up bWAPP locally
+      git clone https://github.com/bwapp/bwapp.git
+      cd bwapp
+      docker-compose up -d
+    teardown: |
+      #!/bin/bash
+      # Clean up bWAPP
+      cd bwapp
+      docker-compose down
+      cd ..
+      rm -rf bwapp
