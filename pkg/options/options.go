@@ -1,20 +1,20 @@
-package config
+package options
 
 import (
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 )
 
-type Settings struct {
+type Options struct {
 	VerbosityLevel string
 	ProviderName   string
 	TemplateID     string
 }
 
-var GlobalSettings Settings
+var GlobalOptions Options
 
-func GetSettings() *Settings {
-	return &GlobalSettings
+func GetOptions() *Options {
+	return &GlobalOptions
 }
 
 func LoadEnv() {
