@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/happyhackingspace/vulnerable-target/internal/logger"
+	"github.com/happyhackingspace/vulnerable-target/internal/utils"
 	"github.com/happyhackingspace/vulnerable-target/pkg/options"
 
 	"github.com/rs/zerolog"
@@ -33,12 +34,12 @@ func init() {
 
 var rootCmd = &cobra.Command{
 	Use:     "vt",
-	Short:   "Create vulnerable environment",
-	Version: "1.0.0",
+	Short:   utils.Banner(),
+	Version: utils.AppVersion,
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		logger.Init()
+		fmt.Println(utils.Banner())
 	},
-	SilenceErrors: true,
 }
 
 func Run() {

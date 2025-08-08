@@ -18,12 +18,7 @@ cd vulnerable-target
 go mod download
 ```
 
-3. Create a `.env` file in the root directory with your configuration values:
-```bash
-cp .env.example .env
-```
-
-4. Run the application with:
+3. Run the application with:
 ```bash
 go run cmd/vt/main.go
 ```

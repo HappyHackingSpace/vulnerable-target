@@ -15,7 +15,13 @@ import (
 
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "Stop vulnerable environment by template id and provider",
+	Short: "Stop a vulnerable environment",
+	Long: `
+Stop a vulnerable environment by its template ID or provider.
+
+Examples:
+  vt stop --id "wordpress_sqli"
+	`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		options := options.GetOptions()
 		provider := registry.GetProvider(options.ProviderName)

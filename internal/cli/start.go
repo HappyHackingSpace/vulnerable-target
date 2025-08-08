@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/happyhackingspace/vulnerable-target/internal/logger"
 	"github.com/happyhackingspace/vulnerable-target/pkg/options"
 	"github.com/happyhackingspace/vulnerable-target/pkg/provider/registry"
 	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
@@ -14,8 +15,7 @@ import (
 )
 
 var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Runs selected template on chosen provider",
+	Use: "start",
 	Run: func(cmd *cobra.Command, _ []string) {
 		options := options.GetOptions()
 		provider := registry.GetProvider(options.ProviderName)
@@ -46,6 +46,8 @@ var startCmd = &cobra.Command{
 
 func init() {
 	options := options.GetOptions()
+	logger.Init()
+	templates.Init()
 
 	rootCmd.AddCommand(startCmd)
 

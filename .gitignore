@@ -23,6 +23,7 @@ go.work.sum
 
 # env file
 .env
+vt
 
 **/.DS_Store
 
