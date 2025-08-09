@@ -55,14 +55,36 @@ func Init() {
 }
 
 func List() {
+	ListWithFilter("")
+}
+
+// ListWithFilter lists templates filtered by tag
+func ListWithFilter(filterTag string) {
 	t := table.NewWriter()
 	t.SetStyle(table.StyleDefault)
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"ID", "Name", "Author", "Technologies", "Tags"})
+
+	count := 0
 	for id, template := range Templates {
 		if template.ID == "example-template" {
 			continue
 		}
+
+		// Apply tag filter if specified
+		if filterTag != "" {
+			hasTag := false
+			for _, tag := range template.Info.Tags {
+				if strings.EqualFold(tag, filterTag) || strings.Contains(strings.ToLower(tag), strings.ToLower(filterTag)) {
+					hasTag = true
+					break
+				}
+			}
+			if !hasTag {
+				continue
+			}
+		}
+
 		technologies := strings.Join(template.Info.Technologies, ", ")
 		tags := strings.Join(template.Info.Tags, ", ")
 		t.AppendRow(table.Row{
@@ -72,8 +94,23 @@ func List() {
 			technologies,
 			tags,
 		})
+		count++
 	}
-	t.SetCaption("there are %d templates", len(Templates))
+
+	if count == 0 {
+		if filterTag != "" {
+			fmt.Printf("No templates found with tag matching '%s'\n", filterTag)
+		} else {
+			fmt.Println("No templates found")
+		}
+		return
+	}
+
+	if filterTag != "" {
+		t.SetCaption("Found %d templates with tag matching '%s'", count, filterTag)
+	} else {
+		t.SetCaption("there are %d templates", count)
+	}
 	t.SetIndexColumn(0)
 	t.Render()
 }
