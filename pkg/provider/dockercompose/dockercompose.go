@@ -2,6 +2,9 @@
 package dockercompose
 
 import (
+	"fmt"
+
+	"github.com/happyhackingspace/vulnerable-target/internal/state"
 	"github.com/happyhackingspace/vulnerable-target/pkg/provider"
 	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
 )
@@ -18,6 +21,16 @@ func (d *DockerCompose) Name() string {
 
 // Start launches the vulnerable target environment using Docker Compose.
 func (d *DockerCompose) Start(template *templates.Template) error {
+	st, err := state.NewManager()
+	if err != nil {
+		return err
+	}
+
+	exist, _ := st.DeploymentExist(d.Name(), template.ID) //nolint:errcheck
+	if exist {
+		return fmt.Errorf("already running")
+	}
+
 	dockerCli, err := createDockerCLI()
 	if err != nil {
 		return err
@@ -33,11 +46,30 @@ func (d *DockerCompose) Start(template *templates.Template) error {
 		return err
 	}
 
+	err = st.AddNewDeployment(d.Name(), template.ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Stop shuts down the vulnerable target environment using Docker Compose.
 func (d *DockerCompose) Stop(template *templates.Template) error {
+	st, err := state.NewManager()
+	if err != nil {
+		return err
+	}
+
+	exist, err := st.DeploymentExist(d.Name(), template.ID)
+	if err != nil {
+		return err
+	}
+
+	if !exist {
+		return fmt.Errorf("deployment not exist")
+	}
+
 	dockerCli, err := createDockerCLI()
 	if err != nil {
 		return err
@@ -53,5 +85,34 @@ func (d *DockerCompose) Stop(template *templates.Template) error {
 		return err
 	}
 
+	err = st.RemoveDeployment(d.Name(), template.ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// Status returns status the vulnerable target environment using Docker Compose.
+func (d *DockerCompose) Status(template *templates.Template) (string, error) {
+	dockerCli, err := createDockerCLI()
+	if err != nil {
+		return "unknown", err
+	}
+
+	project, err := loadComposeProject(*template)
+	if err != nil {
+		return "unknown", err
+	}
+
+	running, err := runComposeStats(dockerCli, project)
+	if err != nil {
+		return "unknown", err
+	}
+
+	if !running {
+		return "unknown", err
+	}
+
+	return "running", err
 }

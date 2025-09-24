@@ -4,7 +4,7 @@ services:
   web:
     image: ghcr.io/happyhackingspace/web-dvwa
     ports:
-      - "80:80"
+      - "1453:80"
     environment:
       - MYSQL_ROOT_PASSWORD=p@ssw0rd
     volumes:

@@ -142,6 +142,29 @@ func runComposeDown(dockerCli command.Cli, project *types.Project) error {
 	return nil
 }
 
+func runComposeStats(dockerCli command.Cli, project *types.Project) (bool, error) {
+	composeService := compose.NewComposeService(dockerCli)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	summary, err := composeService.Ps(ctx, project.Name, api.PsOptions{
+		Project: project,
+		All:     true,
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	for i := 0; i < len(summary); i++ {
+		if summary[i].State != "running" {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
 func resolveComposePath(templateID, path string) (composePath string, workingDir string, err error) {
 	if filepath.IsAbs(path) {
 		return path, filepath.Dir(path), nil
