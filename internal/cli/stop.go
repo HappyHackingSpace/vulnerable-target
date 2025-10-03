@@ -46,9 +46,8 @@ var stopCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(stopCmd)
-
+// setupStopCommand configures the stop command flags
+func setupStopCommand() {
 	stopCmd.Flags().StringP("provider", "p", "",
 		fmt.Sprintf("Specify the provider for building a vulnerable environment (%s)",
 			strings.Join(slices.Collect(maps.Keys(registry.Providers)), ", ")))

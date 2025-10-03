@@ -16,8 +16,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(listCmd)
-
+// setupListCommand configures the list command flags
+func setupListCommand() {
 	listCmd.Flags().StringVarP(&filterTag, "filter", "f", "", "Filter templates by tag (e.g., --filter=php or -f php)")
 }

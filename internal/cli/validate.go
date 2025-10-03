@@ -20,8 +20,9 @@ var validateCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(validateCmd)
+// setupValidateCommand configures the validate command
+func setupValidateCommand() {
+	// No additional flags needed for validate command
 }
 
 // validateAllTemplates validates all templates in the templates directory

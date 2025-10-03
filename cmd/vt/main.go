@@ -7,11 +7,11 @@ import (
 	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
 )
 
-func init() {
+func main() {
+	// Initialize logger and templates explicitly
 	logger.Init()
 	templates.Init()
-}
 
-func main() {
+	// Run the CLI
 	cli.Run()
 }

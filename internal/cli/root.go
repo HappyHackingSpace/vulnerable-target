@@ -24,7 +24,8 @@ var LogLevels = map[string]bool{
 	zerolog.PanicLevel.String(): true,
 }
 
-func init() {
+// setupRootFlags configures the root command flags
+func setupRootFlags() {
 	rootCmd.PersistentFlags().StringP("verbosity", "v", zerolog.InfoLevel.String(),
 		fmt.Sprintf("Set the verbosity level for logs (%s)",
 			strings.Join(slices.Collect(maps.Keys(LogLevels)), ", ")))
@@ -47,8 +48,35 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 }
 
+// InitCLI initializes all CLI commands and their configurations
+func InitCLI() {
+	// Setup root command flags
+	setupRootFlags()
+
+	// Register all subcommands
+	registerCommands()
+}
+
+// registerCommands registers all CLI subcommands and configures their flags
+func registerCommands() {
+	// Register commands
+	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(stopCmd)
+	rootCmd.AddCommand(validateCmd)
+
+	// Setup command-specific flags
+	setupListCommand()
+	setupStartCommand()
+	setupStopCommand()
+	setupValidateCommand()
+}
+
 // Run executes the root command and handles the application lifecycle.
 func Run() {
+	// Initialize CLI before running
+	InitCLI()
+
 	originalHelp := rootCmd.HelpFunc()
 	rootCmd.SetHelpFunc(func(c *cobra.Command, s []string) {
 		banner.Print()
