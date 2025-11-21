@@ -9,9 +9,6 @@ import (
 )
 
 func TestLoadTemplate(t *testing.T) {
-	// create temp dir
-	tempDir := t.TempDir()
-
 	// create dummy content
 	templateContent := `
 id: example-template
@@ -23,7 +20,8 @@ info:
     Vulnerable Target
   references:
     - http://www.vulnerabletarget.com
-  technologies:
+  type: Lab
+  targets:
     - php
     - mysql
   tags:
@@ -33,14 +31,16 @@ info:
   metadata:
 
 providers:
-  online:
-    targets:
-      - vulnerabletarget.com
-
-  aws:
-    path:
+  docker-compose:
+    path: "docker-compose.yaml"
 `
-	err := os.WriteFile(filepath.Join(tempDir, "index.yaml"), []byte(templateContent), 0644)
+	// create temp dir
+	tempDir := filepath.Join(t.TempDir(), "example-template")
+
+	err := os.Mkdir(tempDir, 0750)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tempDir, "index.yaml"), []byte(templateContent), 0644)
 	assert.NoError(t, err)
 
 	tpl, err := LoadTemplate(tempDir)
@@ -50,8 +50,7 @@ providers:
 	assert.Equal(t, "hhsteam", tpl.Info.Author)
 	assert.Equal(t, 1, len(tpl.Info.References))
 	assert.Equal(t, 3, len(tpl.Info.Tags))
-	assert.Equal(t, 3, len(tpl.Info.Tags))
-	assert.Contains(t, tpl.Providers, "aws")
+	assert.Contains(t, tpl.Providers, "docker-compose")
 
 	// case of none exist path
 	_, err = LoadTemplate("/non/existent/path")

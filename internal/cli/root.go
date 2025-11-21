@@ -64,6 +64,7 @@ func registerCommands() {
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(stopCmd)
 	rootCmd.AddCommand(validateCmd)
+	rootCmd.AddCommand(psCmd)
 
 	// Setup command-specific flags
 	setupListCommand()
