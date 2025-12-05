@@ -51,24 +51,67 @@ var Templates = make(map[string]Template)
 
 // Init loads all templates from the templates directory.
 func Init() {
-	wd, err := os.Getwd()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
-	home := filepath.Join(wd, "templates")
-	dirEntry, err := os.ReadDir(home)
-	if err != nil {
-		log.Fatal().Msgf("%v", err)
-	}
-	for _, entry := range dirEntry {
-		template, err := LoadTemplate(filepath.Join(home, entry.Name()))
+
+	repoPath := filepath.Join(homeDir, "vt-templates")
+	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
+		log.Info().Msgf("cloning github.com/HappyHackingSpace/vt-templates")
+		err = cloneTemplatesRepo(repoPath, false)
 		if err != nil {
-			log.Fatal().Msgf("Error loading template %s: %v", entry.Name(), err)
+			log.Fatal().Msgf("%v", err)
 		}
-		if template.ID != entry.Name() {
-			log.Fatal().Msgf("id and directory name should match")
+	}
+
+	dirEntry, err := os.ReadDir(repoPath)
+	if err != nil {
+		log.Fatal().Msgf("%v", err)
+	}
+
+	for _, categoryEntry := range dirEntry {
+		if strings.HasPrefix(categoryEntry.Name(), ".") || !categoryEntry.IsDir() {
+			continue
 		}
-		Templates[template.ID] = template
+
+		categoryPath := filepath.Join(repoPath, categoryEntry.Name())
+		templateEntries, err := os.ReadDir(categoryPath)
+		if err != nil {
+			log.Fatal().Msgf("Error reading category %s: %v", categoryEntry.Name(), err)
+		}
+
+		// Second level: iterate through templates within each category
+		for _, entry := range templateEntries {
+			if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
+				continue
+			}
+
+			templatePath := filepath.Join(categoryPath, entry.Name())
+			template, err := LoadTemplate(templatePath)
+			if err != nil {
+				log.Fatal().Msgf("Error loading template %s: %v", entry.Name(), err)
+			}
+			if template.ID != entry.Name() {
+				log.Fatal().Msgf("id and directory name should match")
+			}
+			Templates[template.ID] = template
+		}
+	}
+}
+
+// Update loads all templates from remote repository (force).
+func Update() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal().Msgf("%v", err)
+	}
+
+	repoPath := filepath.Join(homeDir, "vt-templates")
+	log.Info().Msgf("cloning github.com/HappyHackingSpace/vt-templates")
+	err = cloneTemplatesRepo(repoPath, true)
+	if err != nil {
+		log.Fatal().Msgf("%v", err)
 	}
 }
 

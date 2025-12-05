@@ -1,3 +1,4 @@
+// Package cli provides command-line interface functionality for the vulnerable target application.
 package cli
 
 import (
@@ -6,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/happyhackingspace/vulnerable-target/internal/banner"
 	"github.com/happyhackingspace/vulnerable-target/internal/logger"
-	banner "github.com/happyhackingspace/vulnerable-target/internal/utils"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -41,9 +42,6 @@ var rootCmd = &cobra.Command{
 			log.Fatal().Msgf("%v", err)
 		}
 		logger.InitWithLevel(verbosityLevel)
-		if cmd.Name() != "help" {
-			banner.Print()
-		}
 	},
 	SilenceErrors: true,
 }
@@ -60,17 +58,15 @@ func InitCLI() {
 // registerCommands registers all CLI subcommands and configures their flags
 func registerCommands() {
 	// Register commands
-	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(stopCmd)
-	rootCmd.AddCommand(validateCmd)
 	rootCmd.AddCommand(psCmd)
+	rootCmd.AddCommand(templateCmd)
 
 	// Setup command-specific flags
-	setupListCommand()
 	setupStartCommand()
 	setupStopCommand()
-	setupValidateCommand()
+	setupTemplateCommand()
 }
 
 // Run executes the root command and handles the application lifecycle.
@@ -80,7 +76,6 @@ func Run() {
 
 	originalHelp := rootCmd.HelpFunc()
 	rootCmd.SetHelpFunc(func(c *cobra.Command, s []string) {
-		banner.Print()
 		originalHelp(c, s)
 	})
 
