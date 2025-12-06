@@ -22,7 +22,7 @@ func cloneTemplatesRepo(repoPath string, force bool) error {
 
 		if !force {
 			if !status.IsClean() {
-				return fmt.Errorf("detected uncommitted changes in %s", repoPath)
+				return fmt.Errorf("detected uncomitted changes in %s", repoPath)
 			}
 		}
 
