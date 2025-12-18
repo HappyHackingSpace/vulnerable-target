@@ -9,13 +9,14 @@ import (
 )
 
 func main() {
+	// Initialize logger and templates explicitly
+	logger.Init()
+
 	// Print the banner
 	banner.Print()
 
-	// Initialize logger and templates explicitly
-	logger.Init()
-	templates.Init()
-
 	// Run the CLI
 	cli.Run()
+
+	templates.Init()
 }

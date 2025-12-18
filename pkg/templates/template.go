@@ -58,7 +58,7 @@ func Init() {
 
 	repoPath := filepath.Join(homeDir, "vt-templates")
 	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
-		log.Info().Msgf("cloning github.com/HappyHackingSpace/vt-templates")
+		log.Info().Msg("Fetching templates for the first time")
 		err = cloneTemplatesRepo(repoPath, false)
 		if err != nil {
 			log.Fatal().Msgf("%v", err)

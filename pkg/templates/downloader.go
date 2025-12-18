@@ -29,7 +29,6 @@ func cloneTemplatesRepo(repoPath string, force bool) error {
 		err = worktree.Pull(&git.PullOptions{
 			RemoteName: "origin",
 			Force:      true,
-			Progress:   os.Stdout,
 		})
 
 		if err != nil && err != git.NoErrAlreadyUpToDate {
@@ -44,9 +43,8 @@ func cloneTemplatesRepo(repoPath string, force bool) error {
 	}
 
 	_, err = git.PlainClone(repoPath, false, &git.CloneOptions{
-		URL:      "https://github.com/HappyHackingSpace/vt-templates",
-		Progress: os.Stdout,
-		Depth:    1,
+		URL:   "https://github.com/HappyHackingSpace/vt-templates",
+		Depth: 1,
 	})
 
 	if err != nil {
