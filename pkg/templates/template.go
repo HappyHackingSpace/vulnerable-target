@@ -52,7 +52,7 @@ type Cvss struct {
 // Templates contains all loaded templates indexed by their ID.
 var Templates = make(map[string]Template)
 
-// Init loads all templates from the templates directory.
+// Init initializes the templates repository and loads all templates.
 func Init() {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -68,6 +68,11 @@ func Init() {
 		}
 	}
 
+	loadTemplatesFromDirectory(repoPath)
+}
+
+// loadTemplatesFromDirectory reads all templates from the given path and populates the Templates map.
+func loadTemplatesFromDirectory(repoPath string) {
 	dirEntry, err := os.ReadDir(repoPath)
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
@@ -79,27 +84,31 @@ func Init() {
 		}
 
 		categoryPath := filepath.Join(repoPath, categoryEntry.Name())
-		templateEntries, err := os.ReadDir(categoryPath)
+		loadTemplatesFromCategory(categoryPath, categoryEntry.Name())
+	}
+}
+
+// loadTemplatesFromCategory loads all templates within a single category directory.
+func loadTemplatesFromCategory(categoryPath, categoryName string) {
+	templateEntries, err := os.ReadDir(categoryPath)
+	if err != nil {
+		log.Fatal().Msgf("Error reading category %s: %v", categoryName, err)
+	}
+
+	for _, entry := range templateEntries {
+		if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
+			continue
+		}
+
+		templatePath := filepath.Join(categoryPath, entry.Name())
+		template, err := LoadTemplate(templatePath)
 		if err != nil {
-			log.Fatal().Msgf("Error reading category %s: %v", categoryEntry.Name(), err)
+			log.Fatal().Msgf("Error loading template %s: %v", entry.Name(), err)
 		}
-
-		// Second level: iterate through templates within each category
-		for _, entry := range templateEntries {
-			if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
-				continue
-			}
-
-			templatePath := filepath.Join(categoryPath, entry.Name())
-			template, err := LoadTemplate(templatePath)
-			if err != nil {
-				log.Fatal().Msgf("Error loading template %s: %v", entry.Name(), err)
-			}
-			if template.ID != entry.Name() {
-				log.Fatal().Msgf("id and directory name should match")
-			}
-			Templates[template.ID] = template
+		if template.ID != entry.Name() {
+			log.Fatal().Msgf("id and directory name should match")
 		}
+		Templates[template.ID] = template
 	}
 }
 
