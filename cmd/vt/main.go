@@ -13,7 +13,6 @@ func main() {
 	logger.Init()
 	templates.Init()
 
-	// Print the banner
 	banner.Print()
 
 	// Run the CLI

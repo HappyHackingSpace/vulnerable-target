@@ -10,6 +10,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// TemplateRemoteRepoistory is a constant for repo url.
+const TemplateRemoteRepoistory string = "https://github.com/HappyHackingSpace/vt-templates"
+
 // Template represents a vulnerable target environment configuration.
 type Template struct {
 	ID             string                    `yaml:"id"`
@@ -100,15 +103,15 @@ func Init() {
 	}
 }
 
-// Update loads all templates from remote repository (force).
-func Update() {
+// SyncTemplates downloads or updates all templates from the remote repository.
+func SyncTemplates() {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
 
 	repoPath := filepath.Join(homeDir, "vt-templates")
-	log.Info().Msgf("cloning github.com/HappyHackingSpace/vt-templates")
+	log.Info().Msgf("cloning %s", TemplateRemoteRepoistory)
 	err = cloneTemplatesRepo(repoPath, true)
 	if err != nil {
 		log.Fatal().Msgf("%v", err)

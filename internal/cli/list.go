@@ -51,7 +51,7 @@ var templateCmd = &cobra.Command{
 		}
 
 		if update {
-			templates.Update()
+			templates.SyncTemplates()
 			return
 		}
 	},
