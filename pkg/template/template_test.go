@@ -1,4 +1,4 @@
-package templates
+package template
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetByID(t *testing.T) {
-	Templates = map[string]Template{
+	templates := map[string]Template{
 		"example-template-1": {
 			ID: "example-template-1",
 			Info: Info{
@@ -21,13 +21,12 @@ func TestGetByID(t *testing.T) {
 			},
 		},
 	}
-	firstTemplate, err := GetByID("example-template-1")
+	firstTemplate, err := GetByID(templates, "example-template-1")
 	assert.Nil(t, err)
 	assert.Equal(t, "example-template-1", firstTemplate.ID)
 	noneExistTemplateID := "none-exist-template"
-	noneExistingTemplate, err := GetByID(noneExistTemplateID)
+	noneExistingTemplate, err := GetByID(templates, noneExistTemplateID)
 	assert.Nil(t, noneExistingTemplate)
 	assert.Error(t, err)
 	assert.EqualError(t, err, fmt.Sprintf("template %s not found", noneExistTemplateID))
-
 }

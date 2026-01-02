@@ -1,4 +1,4 @@
-package templates
+package template
 
 import (
 	"errors"
@@ -47,7 +47,7 @@ func cloneTemplatesRepo(repoPath string, force bool) error {
 	}
 
 	_, err = git.PlainClone(repoPath, false, &git.CloneOptions{
-		URL:   TemplateRemoteRepoistory,
+		URL:   TemplateRemoteRepository,
 		Depth: 1,
 	})
 

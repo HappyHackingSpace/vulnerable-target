@@ -2,6 +2,7 @@
 package logger
 
 import (
+	"io"
 	"os"
 	"time"
 
@@ -9,20 +10,45 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// InitWithLevel initializes the logger with the specified verbosity level.
-func InitWithLevel(verbosityLevel string) {
-	level, err := zerolog.ParseLevel(verbosityLevel)
+// Config holds logger configuration options.
+type Config struct {
+	Level      string
+	Output     io.Writer
+	TimeFormat string
+	NoColor    bool
+}
+
+// DefaultConfig returns the default logger configuration.
+func DefaultConfig() *Config {
+	return &Config{
+		Level:      "info",
+		Output:     os.Stdout,
+		TimeFormat: time.TimeOnly,
+		NoColor:    false,
+	}
+}
+
+// New creates a new zerolog.Logger with the given configuration.
+// This is a pure factory function that returns a configured logger
+// without modifying any global state.
+// If cfg is nil, DefaultConfig() is used.
+func New(cfg *Config) zerolog.Logger {
+	if cfg == nil {
+		cfg = DefaultConfig()
+	}
+
+	level, err := zerolog.ParseLevel(cfg.Level)
 	if err != nil {
 		level = zerolog.InfoLevel
 	}
 
 	output := zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: time.TimeOnly,
-		NoColor:    false,
+		Out:        cfg.Output,
+		TimeFormat: cfg.TimeFormat,
+		NoColor:    cfg.NoColor,
 	}
 
-	log.Logger = zerolog.
+	return zerolog.
 		New(output).
 		Level(level).
 		With().
@@ -30,7 +56,30 @@ func InitWithLevel(verbosityLevel string) {
 		Logger()
 }
 
-// Init initializes the logger with the default info level.
+// NewWithLevel creates a new zerolog.Logger with the specified level
+// and default settings for other options.
+func NewWithLevel(level string) zerolog.Logger {
+	cfg := DefaultConfig()
+	cfg.Level = level
+	return New(cfg)
+}
+
+// SetGlobal sets the global log.Logger to the provided logger.
+// This is the only function that modifies global state, and should
+// be called once at application startup.
+func SetGlobal(logger zerolog.Logger) {
+	log.Logger = logger
+}
+
+// InitWithLevel initializes the global logger with the specified verbosity level.
+// Deprecated: Use New() or NewWithLevel() with SetGlobal() instead.
+func InitWithLevel(verbosityLevel string) {
+	logger := NewWithLevel(verbosityLevel)
+	SetGlobal(logger)
+}
+
+// Init initializes the global logger with the default info level.
+// Deprecated: Use New() or NewWithLevel() with SetGlobal() instead.
 func Init() {
 	InitWithLevel("info")
 }

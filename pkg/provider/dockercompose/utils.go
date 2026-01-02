@@ -2,9 +2,11 @@ package dockercompose
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/compose-spec/compose-go/v2/loader"
@@ -13,7 +15,8 @@ import (
 	"github.com/docker/cli/cli/flags"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	"github.com/happyhackingspace/vulnerable-target/internal/app"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 )
 
 func createDockerCLI() (command.Cli, error) {
@@ -31,7 +34,7 @@ func createDockerCLI() (command.Cli, error) {
 	return dockerCli, nil
 }
 
-func loadComposeProject(template templates.Template) (*types.Project, error) {
+func loadComposeProject(template tmpl.Template) (*types.Project, error) {
 	providerConfig, exists := template.Providers["docker-compose"]
 	if !exists {
 		return nil, fmt.Errorf("template %q missing docker-compose provider configuration", template.ID)
@@ -40,7 +43,7 @@ func loadComposeProject(template templates.Template) (*types.Project, error) {
 		return nil, fmt.Errorf("template %q docker-compose.path is empty", template.ID)
 	}
 
-	composePath, workingDir, err := resolveComposePath(template.ID, providerConfig.Path)
+	composePath, workingDir, err := resolveComposePath(template.ID, template.Info.Type, providerConfig.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -165,17 +168,22 @@ func runComposeStats(dockerCli command.Cli, project *types.Project) (bool, error
 	return true, nil
 }
 
-func resolveComposePath(templateID, path string) (composePath string, workingDir string, err error) {
+func resolveComposePath(templateID, templateType, path string) (composePath string, workingDir string, err error) {
 	if filepath.IsAbs(path) {
 		return path, filepath.Dir(path), nil
 	}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", "", err
+	var categoryMap = map[string]string{
+		"lab": "labs",
+		"cve": "cves",
 	}
 
-	composePath = filepath.Join(wd, "templates", templateID, path)
+	category, ctgExist := categoryMap[strings.ToLower(templateType)]
+	if !ctgExist {
+		return "", "", errors.New("undefined category for template: type must be one of 'lab', 'cve'")
+	}
+
+	cfg := app.DefaultConfig()
+	composePath = filepath.Join(cfg.TemplatesPath, category, templateID, path)
 
 	if _, statErr := os.Stat(composePath); statErr != nil {
 		return "", "", fmt.Errorf("compose file %q not accessible: %w", composePath, statErr)

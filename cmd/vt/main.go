@@ -2,19 +2,40 @@
 package main
 
 import (
-	"github.com/happyhackingspace/vulnerable-target/internal/banner"
+	"github.com/happyhackingspace/vulnerable-target/internal/app"
 	"github.com/happyhackingspace/vulnerable-target/internal/cli"
 	"github.com/happyhackingspace/vulnerable-target/internal/logger"
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	"github.com/happyhackingspace/vulnerable-target/internal/state"
+	"github.com/happyhackingspace/vulnerable-target/pkg/provider/registry"
+	"github.com/happyhackingspace/vulnerable-target/pkg/store/disk"
+	"github.com/happyhackingspace/vulnerable-target/pkg/template"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	// Initialize logger and templates explicitly
-	logger.Init()
-	templates.Init()
+	cfg := app.DefaultConfig()
 
-	banner.Print()
+	appLogger := logger.NewWithLevel(cfg.LogLevel)
+	logger.SetGlobal(appLogger)
 
-	// Run the CLI
-	cli.Run()
+	templates, err := template.LoadTemplates(cfg.TemplatesPath)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to load templates")
+	}
+
+	storeCfg := disk.NewConfig().
+		WithFileName("deployments.db").
+		WithBucketName("deployments")
+	stateManager, err := state.NewManager(storeCfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to create state manager")
+	}
+
+	providers := registry.NewProviders(stateManager)
+
+	application := app.NewApp(templates, providers, stateManager, cfg)
+
+	if err := cli.New(application).Run(); err != nil {
+		log.Fatal().Err(err).Msg("CLI error")
+	}
 }

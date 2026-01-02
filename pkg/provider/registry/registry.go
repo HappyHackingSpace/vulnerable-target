@@ -2,16 +2,21 @@
 package registry
 
 import (
+	"github.com/happyhackingspace/vulnerable-target/internal/state"
 	"github.com/happyhackingspace/vulnerable-target/pkg/provider"
 	"github.com/happyhackingspace/vulnerable-target/pkg/provider/dockercompose"
 )
 
-// Providers contains all available providers registered in the system.
-var Providers = map[string]provider.Provider{
-	"docker-compose": &dockercompose.DockerCompose{},
+// NewProviders creates and returns a map of all available providers.
+// Each provider is initialized with the given state manager.
+func NewProviders(sm *state.Manager) map[string]provider.Provider {
+	return map[string]provider.Provider{
+		"docker-compose": dockercompose.NewDockerCompose(sm),
+	}
 }
 
-// GetProvider returns the provider with the specified name.
-func GetProvider(name string) provider.Provider {
-	return Providers[name]
+// GetProvider retrieves a provider by name from the given providers map.
+func GetProvider(providers map[string]provider.Provider, name string) (provider.Provider, bool) {
+	p, ok := providers[name]
+	return p, ok
 }

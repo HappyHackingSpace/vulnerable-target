@@ -1,5 +1,5 @@
-// Package templates provides functionality for loading and managing vulnerable target environment templates.
-package templates
+// Package template provides functionality for loading and managing vulnerable target environment templates.
+package template
 
 import (
 	"os"
