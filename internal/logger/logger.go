@@ -31,7 +31,12 @@ func DefaultConfig() *Config {
 // New creates a new zerolog.Logger with the given configuration.
 // This is a pure factory function that returns a configured logger
 // without modifying any global state.
+// If cfg is nil, DefaultConfig() is used.
 func New(cfg *Config) zerolog.Logger {
+	if cfg == nil {
+		cfg = DefaultConfig()
+	}
+
 	level, err := zerolog.ParseLevel(cfg.Level)
 	if err != nil {
 		level = zerolog.InfoLevel

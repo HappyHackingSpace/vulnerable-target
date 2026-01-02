@@ -2,8 +2,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/happyhackingspace/vulnerable-target/internal/app"
 	"github.com/happyhackingspace/vulnerable-target/internal/banner"
 	"github.com/happyhackingspace/vulnerable-target/internal/cli"
@@ -50,6 +48,5 @@ func main() {
 	// Create and run CLI
 	if err := cli.New(application).Run(); err != nil {
 		log.Fatal().Err(err).Msg("CLI error")
-		os.Exit(1)
 	}
 }

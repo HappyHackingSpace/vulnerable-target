@@ -54,15 +54,6 @@ func NewApp(
 	}
 }
 
-// GetTemplate retrieves a template by ID from the app's template map.
-func (a *App) GetTemplate(id string) (*template.Template, bool) {
-	t, ok := a.Templates[id]
-	if !ok {
-		return nil, false
-	}
-	return &t, true
-}
-
 // GetProvider retrieves a provider by name from the app's provider map.
 func (a *App) GetProvider(name string) (provider.Provider, bool) {
 	p, ok := a.Providers[name]
