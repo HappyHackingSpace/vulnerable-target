@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/compose-spec/compose-go/v2/loader"
@@ -172,13 +173,13 @@ func resolveComposePath(templateID, templateType, path string) (composePath stri
 		return path, filepath.Dir(path), nil
 	}
 	var categoryMap = map[string]string{
-		"Lab": "labs",
-		"CVE": "cves",
+		"lab": "labs",
+		"cve": "cves",
 	}
 
-	category, ctgExist := categoryMap[templateType]
+	category, ctgExist := categoryMap[strings.ToLower(templateType)]
 	if !ctgExist {
-		return "", "", errors.New("undefined category for template")
+		return "", "", errors.New("undefined category for template: type must be one of 'lab', 'cve'")
 	}
 
 	cfg := app.DefaultConfig()
