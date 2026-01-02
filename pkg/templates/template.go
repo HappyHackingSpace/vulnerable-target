@@ -10,6 +10,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// TemplateRemoteRepoistory is a constant for repo url.
+const TemplateRemoteRepoistory string = "https://github.com/HappyHackingSpace/vt-templates"
+
 // Template represents a vulnerable target environment configuration.
 type Template struct {
 	ID             string                    `yaml:"id"`
@@ -49,19 +52,56 @@ type Cvss struct {
 // Templates contains all loaded templates indexed by their ID.
 var Templates = make(map[string]Template)
 
-// Init loads all templates from the templates directory.
+// Init initializes the templates repository and loads all templates.
 func Init() {
-	wd, err := os.Getwd()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
-	home := filepath.Join(wd, "templates")
-	dirEntry, err := os.ReadDir(home)
+
+	repoPath := filepath.Join(homeDir, "vt-templates")
+	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
+		log.Info().Msg("Fetching templates for the first time")
+		err = cloneTemplatesRepo(repoPath, false)
+		if err != nil {
+			log.Fatal().Msgf("%v", err)
+		}
+	}
+
+	loadTemplatesFromDirectory(repoPath)
+}
+
+// loadTemplatesFromDirectory reads all templates from the given path and populates the Templates map.
+func loadTemplatesFromDirectory(repoPath string) {
+	dirEntry, err := os.ReadDir(repoPath)
 	if err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
-	for _, entry := range dirEntry {
-		template, err := LoadTemplate(filepath.Join(home, entry.Name()))
+
+	for _, categoryEntry := range dirEntry {
+		if strings.HasPrefix(categoryEntry.Name(), ".") || !categoryEntry.IsDir() {
+			continue
+		}
+
+		categoryPath := filepath.Join(repoPath, categoryEntry.Name())
+		loadTemplatesFromCategory(categoryPath, categoryEntry.Name())
+	}
+}
+
+// loadTemplatesFromCategory loads all templates within a single category directory.
+func loadTemplatesFromCategory(categoryPath, categoryName string) {
+	templateEntries, err := os.ReadDir(categoryPath)
+	if err != nil {
+		log.Fatal().Msgf("Error reading category %s: %v", categoryName, err)
+	}
+
+	for _, entry := range templateEntries {
+		if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
+			continue
+		}
+
+		templatePath := filepath.Join(categoryPath, entry.Name())
+		template, err := LoadTemplate(templatePath)
 		if err != nil {
 			log.Fatal().Msgf("Error loading template %s: %v", entry.Name(), err)
 		}
@@ -69,6 +109,21 @@ func Init() {
 			log.Fatal().Msgf("id and directory name should match")
 		}
 		Templates[template.ID] = template
+	}
+}
+
+// SyncTemplates downloads or updates all templates from the remote repository.
+func SyncTemplates() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal().Msgf("%v", err)
+	}
+
+	repoPath := filepath.Join(homeDir, "vt-templates")
+	log.Info().Msgf("cloning %s", TemplateRemoteRepoistory)
+	err = cloneTemplatesRepo(repoPath, true)
+	if err != nil {
+		log.Fatal().Msgf("%v", err)
 	}
 }
 

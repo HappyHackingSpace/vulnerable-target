@@ -1,9 +1,0 @@
-version: "3"
-
-services:
-  vt-2025-29927:
-    image: ghcr.io/happyhackingspace/vt-2025-29927:latest
-    container_name: vt-2025-29927
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
