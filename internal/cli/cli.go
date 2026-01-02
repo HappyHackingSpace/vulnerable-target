@@ -55,6 +55,7 @@ func (c *CLI) setupCommands() {
 		},
 		SilenceErrors: true,
 	}
+	c.rootCmd.SetHelpTemplate(banner.Banner() + "\n" + c.rootCmd.HelpTemplate())
 
 	// Setup root flags
 	c.rootCmd.PersistentFlags().StringP("verbosity", "v", zerolog.InfoLevel.String(),

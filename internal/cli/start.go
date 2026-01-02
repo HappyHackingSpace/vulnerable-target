@@ -65,6 +65,10 @@ func (c *CLI) newStartCommand() *cobra.Command {
 	cmd.Flags().String("id", "",
 		"Specify a template ID for targeted vulnerable environment")
 
+	if err := cmd.MarkFlagRequired("provider"); err != nil {
+		log.Fatal().Msgf("%v", err)
+	}
+
 	if err := cmd.MarkFlagRequired("id"); err != nil {
 		log.Fatal().Msgf("%v", err)
 	}

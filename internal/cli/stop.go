@@ -44,7 +44,7 @@ func (c *CLI) newStopCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("provider", "p", "",
+	cmd.Flags().StringP("provider", "p", "docker-compose",
 		fmt.Sprintf("Specify the provider for building a vulnerable environment (%s)",
 			strings.Join(c.providerNames(), ", ")))
 
