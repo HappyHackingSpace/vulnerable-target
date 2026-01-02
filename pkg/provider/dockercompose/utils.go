@@ -2,6 +2,7 @@ package dockercompose
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,7 @@ import (
 	"github.com/docker/cli/cli/flags"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/compose"
+	"github.com/happyhackingspace/vulnerable-target/internal/app"
 	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 )
 
@@ -40,7 +42,7 @@ func loadComposeProject(template tmpl.Template) (*types.Project, error) {
 		return nil, fmt.Errorf("template %q docker-compose.path is empty", template.ID)
 	}
 
-	composePath, workingDir, err := resolveComposePath(template.ID, providerConfig.Path)
+	composePath, workingDir, err := resolveComposePath(template.ID, template.Info.Type, providerConfig.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -165,17 +167,22 @@ func runComposeStats(dockerCli command.Cli, project *types.Project) (bool, error
 	return true, nil
 }
 
-func resolveComposePath(templateID, path string) (composePath string, workingDir string, err error) {
+func resolveComposePath(templateID, templateType, path string) (composePath string, workingDir string, err error) {
 	if filepath.IsAbs(path) {
 		return path, filepath.Dir(path), nil
 	}
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", "", err
+	var categoryMap = map[string]string{
+		"Lab": "labs",
+		"CVE": "cves",
 	}
 
-	composePath = filepath.Join(wd, "templates", templateID, path)
+	category, ctgExist := categoryMap[templateType]
+	if !ctgExist {
+		return "", "", errors.New("undefined category for template")
+	}
+
+	cfg := app.DefaultConfig()
+	composePath = filepath.Join(cfg.TemplatesPath, category, templateID, path)
 
 	if _, statErr := os.Stat(composePath); statErr != nil {
 		return "", "", fmt.Errorf("compose file %q not accessible: %w", composePath, statErr)
