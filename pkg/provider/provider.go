@@ -2,13 +2,13 @@
 package provider
 
 import (
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 )
 
 // Provider defines the interface for managing vulnerable target environments.
 type Provider interface {
 	Name() string
-	Start(template *templates.Template) error
-	Stop(template *templates.Template) error
-	Status(template *templates.Template) (string, error)
+	Start(template *tmpl.Template) error
+	Stop(template *tmpl.Template) error
+	Status(template *tmpl.Template) (string, error)
 }

@@ -8,7 +8,7 @@ We welcome contributions from everyone! Here's how you can contribute:
 
 2. **Create a New Branch**
     - Make your changes
-    - If you want to add a new vulnerable target template, check [the example template](./templates/example-template/index.yaml)
+    - If you want to add a new vulnerable target template, please contribute to our separate templates repository: [vt-templates](https://github.com/HappyHackingSpace/vt-templates). You can check the [example template](https://github.com/HappyHackingSpace/vt-templates/blob/main/cves/vt-2024-53995/index.yaml).
     - Test your changes locally before submitting
 
 3. **Submit a Pull Request**

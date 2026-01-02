@@ -13,7 +13,7 @@ import (
 	"github.com/docker/cli/cli/flags"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 )
 
 func createDockerCLI() (command.Cli, error) {
@@ -31,7 +31,7 @@ func createDockerCLI() (command.Cli, error) {
 	return dockerCli, nil
 }
 
-func loadComposeProject(template templates.Template) (*types.Project, error) {
+func loadComposeProject(template tmpl.Template) (*types.Project, error) {
 	providerConfig, exists := template.Providers["docker-compose"]
 	if !exists {
 		return nil, fmt.Errorf("template %q missing docker-compose provider configuration", template.ID)

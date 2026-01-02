@@ -5,13 +5,13 @@ import (
 	"github.com/happyhackingspace/vulnerable-target/internal/banner"
 	"github.com/happyhackingspace/vulnerable-target/internal/cli"
 	"github.com/happyhackingspace/vulnerable-target/internal/logger"
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 )
 
 func main() {
 	// Initialize logger and templates explicitly
 	logger.Init()
-	templates.Init()
+	tmpl.Init()
 
 	banner.Print()
 

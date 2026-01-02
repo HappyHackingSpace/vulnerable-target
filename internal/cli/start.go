@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/happyhackingspace/vulnerable-target/pkg/provider/registry"
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +38,7 @@ var startCmd = &cobra.Command{
 			log.Fatal().Msgf("provider %s not found", providerName)
 		}
 
-		template, err := templates.GetByID(templateID)
+		template, err := tmpl.GetByID(templateID)
 		if err != nil {
 			log.Fatal().Msgf("%v", err)
 		}

@@ -32,3 +32,6 @@ go.work.sum
 *.db
 
 .vscode
+
+CLAUDE.md
+.claude

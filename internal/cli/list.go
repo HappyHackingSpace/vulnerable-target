@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
@@ -46,12 +46,12 @@ var templateCmd = &cobra.Command{
 		}
 
 		if list {
-			templates.ListWithFilter(filter)
+			tmpl.ListWithFilter(filter)
 			return
 		}
 
 		if update {
-			templates.SyncTemplates()
+			tmpl.SyncTemplates()
 			return
 		}
 	},

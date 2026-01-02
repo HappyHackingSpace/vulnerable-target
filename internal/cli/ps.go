@@ -7,7 +7,7 @@ import (
 	"github.com/happyhackingspace/vulnerable-target/internal/state"
 	"github.com/happyhackingspace/vulnerable-target/pkg/provider/registry"
 	"github.com/happyhackingspace/vulnerable-target/pkg/store/disk"
-	"github.com/happyhackingspace/vulnerable-target/pkg/templates"
+	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -42,7 +42,7 @@ var psCmd = &cobra.Command{
 				log.Error().Msgf("provider %q not found", deployment.ProviderName)
 				continue
 			}
-			template, err := templates.GetByID(deployment.TemplateID)
+			template, err := tmpl.GetByID(deployment.TemplateID)
 			if err != nil {
 				log.Error().Msgf("%v", err)
 				continue
