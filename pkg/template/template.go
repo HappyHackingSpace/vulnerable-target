@@ -10,8 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TemplateRemoteRepoistory is a constant for repo url.
-const TemplateRemoteRepoistory string = "https://github.com/HappyHackingSpace/vt-templates"
+// TemplateRemoteRepository is a constant for repo url.
+const TemplateRemoteRepository string = "https://github.com/HappyHackingSpace/vt-templates"
 
 // Template represents a vulnerable target environment configuration.
 type Template struct {
@@ -49,33 +49,28 @@ type Cvss struct {
 	Metrics string `yaml:"metrics"`
 }
 
-// Templates contains all loaded templates indexed by their ID.
-var Templates = make(map[string]Template)
-
-// Init initializes the templates repository and loads all templates.
-func Init() {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal().Msgf("%v", err)
-	}
-
-	repoPath := filepath.Join(homeDir, "vt-templates")
+// LoadTemplates loads all templates from the given repository path.
+// If the repository doesn't exist, it clones it first.
+// Returns a map of templates indexed by their ID.
+func LoadTemplates(repoPath string) (map[string]Template, error) {
 	if _, err := os.Stat(repoPath); os.IsNotExist(err) {
 		log.Info().Msg("Fetching templates for the first time")
-		err = cloneTemplatesRepo(repoPath, false)
-		if err != nil {
-			log.Fatal().Msgf("%v", err)
+		if err := cloneTemplatesRepo(repoPath, false); err != nil {
+			return nil, fmt.Errorf("failed to clone templates repository: %w", err)
 		}
 	}
 
-	loadTemplatesFromDirectory(repoPath)
+	return loadTemplatesFromDirectory(repoPath)
 }
 
-// loadTemplatesFromDirectory reads all templates from the given path and populates the Templates map.
-func loadTemplatesFromDirectory(repoPath string) {
+// loadTemplatesFromDirectory reads all templates from the given path.
+// Returns a map of templates indexed by their ID.
+func loadTemplatesFromDirectory(repoPath string) (map[string]Template, error) {
+	templates := make(map[string]Template)
+
 	dirEntry, err := os.ReadDir(repoPath)
 	if err != nil {
-		log.Fatal().Msgf("%v", err)
+		return nil, fmt.Errorf("failed to read directory %s: %w", repoPath, err)
 	}
 
 	for _, categoryEntry := range dirEntry {
@@ -84,15 +79,27 @@ func loadTemplatesFromDirectory(repoPath string) {
 		}
 
 		categoryPath := filepath.Join(repoPath, categoryEntry.Name())
-		loadTemplatesFromCategory(categoryPath, categoryEntry.Name())
+		categoryTemplates, err := loadTemplatesFromCategory(categoryPath, categoryEntry.Name())
+		if err != nil {
+			return nil, err
+		}
+
+		for id, tmpl := range categoryTemplates {
+			templates[id] = tmpl
+		}
 	}
+
+	return templates, nil
 }
 
 // loadTemplatesFromCategory loads all templates within a single category directory.
-func loadTemplatesFromCategory(categoryPath, categoryName string) {
+// Returns a map of templates indexed by their ID.
+func loadTemplatesFromCategory(categoryPath, categoryName string) (map[string]Template, error) {
+	templates := make(map[string]Template)
+
 	templateEntries, err := os.ReadDir(categoryPath)
 	if err != nil {
-		log.Fatal().Msgf("Error reading category %s: %v", categoryName, err)
+		return nil, fmt.Errorf("error reading category %s: %w", categoryName, err)
 	}
 
 	for _, entry := range templateEntries {
@@ -101,49 +108,45 @@ func loadTemplatesFromCategory(categoryPath, categoryName string) {
 		}
 
 		templatePath := filepath.Join(categoryPath, entry.Name())
-		template, err := LoadTemplate(templatePath)
+		tmpl, err := LoadTemplate(templatePath)
 		if err != nil {
-			log.Fatal().Msgf("Error loading template %s: %v", entry.Name(), err)
+			return nil, fmt.Errorf("error loading template %s: %w", entry.Name(), err)
 		}
-		if template.ID != entry.Name() {
-			log.Fatal().Msgf("id and directory name should match")
+		if tmpl.ID != entry.Name() {
+			return nil, fmt.Errorf("template id '%s' and directory name '%s' should match", tmpl.ID, entry.Name())
 		}
-		Templates[template.ID] = template
+		templates[tmpl.ID] = tmpl
 	}
+
+	return templates, nil
 }
 
 // SyncTemplates downloads or updates all templates from the remote repository.
-func SyncTemplates() {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal().Msgf("%v", err)
+func SyncTemplates(repoPath string) error {
+	log.Info().Msgf("cloning %s", TemplateRemoteRepository)
+	if err := cloneTemplatesRepo(repoPath, true); err != nil {
+		return fmt.Errorf("failed to sync templates: %w", err)
 	}
-
-	repoPath := filepath.Join(homeDir, "vt-templates")
-	log.Info().Msgf("cloning %s", TemplateRemoteRepoistory)
-	err = cloneTemplatesRepo(repoPath, true)
-	if err != nil {
-		log.Fatal().Msgf("%v", err)
-	}
+	return nil
 }
 
-// List displays all available templates in a table format.
-func List() {
-	ListWithFilter("")
+// ListTemplates displays all available templates in a table format.
+func ListTemplates(templates map[string]Template) {
+	ListTemplatesWithFilter(templates, "")
 }
 
-// ListWithFilter displays all available templates in a table format, optionally filtered by tag.
-func ListWithFilter(filterTag string) {
+// ListTemplatesWithFilter displays templates in a table format, optionally filtered by tag.
+func ListTemplatesWithFilter(templates map[string]Template, filterTag string) {
 	t := table.NewWriter()
 	t.SetStyle(table.StyleDefault)
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"ID", "Name", "Author", "Targets", "Type", "Tags"})
 
 	count := 0
-	for _, template := range Templates {
+	for _, tmpl := range templates {
 		if filterTag != "" {
 			hasTag := false
-			for _, tag := range template.Info.Tags {
+			for _, tag := range tmpl.Info.Tags {
 				if strings.EqualFold(tag, filterTag) || strings.Contains(strings.ToLower(tag), strings.ToLower(filterTag)) {
 					hasTag = true
 					break
@@ -154,14 +157,14 @@ func ListWithFilter(filterTag string) {
 			}
 		}
 
-		tags := strings.Join(template.Info.Tags, ", ")
-		targets := strings.Join(template.Info.Targets, ", ")
+		tags := strings.Join(tmpl.Info.Tags, ", ")
+		targets := strings.Join(tmpl.Info.Targets, ", ")
 		t.AppendRow(table.Row{
-			template.ID,
-			template.Info.Name,
-			template.Info.Author,
+			tmpl.ID,
+			tmpl.Info.Name,
+			tmpl.Info.Author,
 			targets,
-			template.Info.Type,
+			tmpl.Info.Type,
 			tags,
 		})
 		count++
@@ -185,11 +188,11 @@ func ListWithFilter(filterTag string) {
 	t.Render()
 }
 
-// GetByID retrieves a template by its ID.
-func GetByID(templateID string) (*Template, error) {
-	template := Templates[templateID]
-	if template.ID == "" {
+// GetByID retrieves a template by its ID from the given templates map.
+func GetByID(templates map[string]Template, templateID string) (*Template, error) {
+	tmpl, ok := templates[templateID]
+	if !ok || tmpl.ID == "" {
 		return nil, fmt.Errorf("template %s not found", templateID)
 	}
-	return &template, nil
+	return &tmpl, nil
 }

@@ -2,66 +2,62 @@ package cli
 
 import (
 	"fmt"
-	"maps"
-	"slices"
 	"strings"
 
-	"github.com/happyhackingspace/vulnerable-target/pkg/provider/registry"
 	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
-var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stop vulnerable environment by template id and provider",
-	Run: func(cmd *cobra.Command, _ []string) {
-		providerName, err := cmd.Flags().GetString("provider")
-		if err != nil {
-			log.Fatal().Msgf("%v", err)
-		}
+// newStopCommand creates the stop command.
+func (c *CLI) newStopCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "stop",
+		Short: "Stop vulnerable environment by template id and provider",
+		Run: func(cmd *cobra.Command, _ []string) {
+			providerName, err := cmd.Flags().GetString("provider")
+			if err != nil {
+				log.Fatal().Msgf("%v", err)
+			}
 
-		templateID, err := cmd.Flags().GetString("id")
-		if err != nil {
-			log.Fatal().Msgf("%v", err)
-		}
+			templateID, err := cmd.Flags().GetString("id")
+			if err != nil {
+				log.Fatal().Msgf("%v", err)
+			}
 
-		provider := registry.GetProvider(providerName)
+			provider, ok := c.app.GetProvider(providerName)
+			if !ok {
+				log.Fatal().Msgf("provider %s not found", providerName)
+			}
 
-		if provider == nil {
-			log.Fatal().Msgf("provider %s not found", providerName)
-		}
+			template, err := tmpl.GetByID(c.app.Templates, templateID)
+			if err != nil {
+				log.Fatal().Msgf("%v", err)
+			}
 
-		template, err := tmpl.GetByID(templateID)
-		if err != nil {
-			log.Fatal().Msgf("%v", err)
-		}
+			err = provider.Stop(template)
+			if err != nil {
+				log.Fatal().Msgf("%v", err)
+			}
 
-		err = provider.Stop(template)
-		if err != nil {
-			log.Fatal().Msgf("%v", err)
-		}
+			log.Info().Msgf("%s template stopped on %s", templateID, providerName)
+		},
+	}
 
-		log.Info().Msgf("%s template stopped on %s", templateID, providerName)
-	},
-}
-
-// setupStopCommand configures the stop command flags
-func setupStopCommand() {
-	stopCmd.Flags().StringP("provider", "p", "",
+	cmd.Flags().StringP("provider", "p", "",
 		fmt.Sprintf("Specify the provider for building a vulnerable environment (%s)",
-			strings.Join(slices.Collect(maps.Keys(registry.Providers)), ", ")))
+			strings.Join(c.providerNames(), ", ")))
 
-	stopCmd.Flags().String("id", "",
+	cmd.Flags().String("id", "",
 		"Specify a template ID for targeted vulnerable environment")
 
-	err := stopCmd.MarkFlagRequired("provider")
-	if err != nil {
+	if err := cmd.MarkFlagRequired("provider"); err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
 
-	err = stopCmd.MarkFlagRequired("id")
-	if err != nil {
+	if err := cmd.MarkFlagRequired("id"); err != nil {
 		log.Fatal().Msgf("%v", err)
 	}
+
+	return cmd
 }
