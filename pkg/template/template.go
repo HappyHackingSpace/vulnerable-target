@@ -90,7 +90,7 @@ func formatPoc(poc map[string][]string) string {
 
 func formatProviders(providers map[string]ProviderConfig) string {
 	if len(providers) == 0 {
-		return "-"
+		return ""
 	}
 	names := make([]string, 0, len(providers))
 	for name := range providers {
