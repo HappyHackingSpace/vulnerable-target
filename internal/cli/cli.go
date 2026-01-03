@@ -67,6 +67,7 @@ func (c *CLI) setupCommands() {
 	c.rootCmd.AddCommand(c.newStopCommand())
 	c.rootCmd.AddCommand(c.newPsCommand())
 	c.rootCmd.AddCommand(c.newTemplateCommand())
+	c.rootCmd.AddCommand(c.newInspectCommand())
 }
 
 // Run executes the CLI and returns any error.

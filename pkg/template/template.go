@@ -49,6 +49,63 @@ type Cvss struct {
 	Metrics string `yaml:"metrics"`
 }
 
+// String returns template fields as a table
+func (t Template) String() string {
+	tw := table.NewWriter()
+	tw.AppendRow(table.Row{"ID", t.ID})
+	tw.AppendRow(table.Row{"Name", t.Info.Name})
+	tw.AppendRow(table.Row{"Description", t.Info.Description})
+	tw.AppendRow(table.Row{"Author", t.Info.Author})
+	tw.AppendRow(table.Row{"Type", t.Info.Type})
+	tw.AppendRow(table.Row{"Targets", formatList(t.Info.Targets)})
+	tw.AppendRow(table.Row{"Affected Versions", formatList(t.Info.AffectedVersions)})
+	tw.AppendRow(table.Row{"Fixed Version", t.Info.FixedVersion})
+	tw.AppendRow(table.Row{"CWE", t.Info.Cwe})
+	tw.AppendRow(table.Row{"CVSS Score", t.Info.Cvss.Score})
+	tw.AppendRow(table.Row{"CVSS Metrics", t.Info.Cvss.Metrics})
+	tw.AppendRow(table.Row{"Tags", formatList(t.Info.Tags)})
+	tw.AppendRow(table.Row{"References", formatList(t.Info.References)})
+	tw.AppendRow(table.Row{"Proof of Concept", formatPoc(t.ProofOfConcept)})
+	tw.AppendRow(table.Row{"Remediation", formatList(t.Remediation)})
+	tw.AppendRow(table.Row{"Providers", formatProviders(t.Providers)})
+	tw.AppendRow(table.Row{"Post Install", formatList(t.PostInstall)})
+
+	tw.Style().Options.DrawBorder = true
+	tw.Style().Options.SeparateRows = true
+	tw.Style().Options.SeparateColumns = true
+
+	return tw.Render()
+}
+
+func formatPoc(poc map[string][]string) string {
+	if len(poc) == 0 {
+		return ""
+	}
+	var parts []string
+	for key, values := range poc {
+		parts = append(parts, fmt.Sprintf("%s: %s", key, strings.Join(values, ", ")))
+	}
+	return strings.Join(parts, "\n")
+}
+
+func formatProviders(providers map[string]ProviderConfig) string {
+	if len(providers) == 0 {
+		return "-"
+	}
+	names := make([]string, 0, len(providers))
+	for name := range providers {
+		names = append(names, name)
+	}
+	return strings.Join(names, "\n")
+}
+
+func formatList(items []string) string {
+	if len(items) == 0 {
+		return ""
+	}
+	return strings.Join(items, "\n")
+}
+
 // LoadTemplates loads all templates from the given repository path.
 // If the repository doesn't exist, it clones it first.
 // Returns a map of templates indexed by their ID.
