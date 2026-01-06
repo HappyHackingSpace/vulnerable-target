@@ -301,3 +301,107 @@ func GetByID(templates map[string]Template, templateID string) (*Template, error
 	}
 	return &tmpl, nil
 }
+
+// GetDockerComposePath finds and returns the docker-compose file path for a given template ID.
+// It searches through all category directories in the templates repository to locate the template.
+// Returns the absolute path to the compose file and the working directory.
+func GetDockerComposePath(templateID, repoPath string) (composePath string, workingDir string, err error) {
+	// Search for template in all category directories
+	dirEntries, err := os.ReadDir(repoPath)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to read templates directory: %w", err)
+	}
+
+	for _, entry := range dirEntries {
+		if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
+			continue
+		}
+
+		// Check if this category contains the template
+		templateDir := filepath.Join(repoPath, entry.Name(), templateID)
+		if !isTemplateDirectory(templateDir) {
+			// Search recursively in subdirectories
+			categoryPath := filepath.Join(repoPath, entry.Name())
+			found, err := findTemplateInCategory(categoryPath, templateID)
+			if err != nil {
+				continue
+			}
+			if found != "" {
+				templateDir = found
+			} else {
+				continue
+			}
+		}
+
+		// Load the template to get provider config
+		tmpl, err := LoadTemplate(templateDir)
+		if err != nil {
+			continue
+		}
+
+		if tmpl.ID != templateID {
+			continue
+		}
+
+		// Get docker-compose provider config
+		providerConfig, exists := tmpl.Providers["docker-compose"]
+		if !exists {
+			return "", "", fmt.Errorf("template %q missing docker-compose provider configuration", templateID)
+		}
+		if providerConfig.Path == "" {
+			return "", "", fmt.Errorf("template %q docker-compose.path is empty", templateID)
+		}
+
+		// Construct the compose file path
+		if filepath.IsAbs(providerConfig.Path) {
+			return providerConfig.Path, filepath.Dir(providerConfig.Path), nil
+		}
+
+		composePath = filepath.Join(templateDir, providerConfig.Path)
+		if _, statErr := os.Stat(composePath); statErr != nil {
+			continue
+		}
+
+		return composePath, filepath.Dir(composePath), nil
+	}
+
+	return "", "", fmt.Errorf("docker-compose file for template %q not found", templateID)
+}
+
+// findTemplateInCategory recursively searches for a template directory within a category.
+func findTemplateInCategory(categoryPath, templateID string) (string, error) {
+	var foundPath string
+	err := filepath.WalkDir(categoryPath, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if strings.HasPrefix(d.Name(), ".") {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if d.Type()&os.ModeSymlink != 0 {
+			return filepath.SkipDir
+		}
+
+		if !d.IsDir() {
+			return nil
+		}
+
+		if d.Name() == templateID && isTemplateDirectory(path) {
+			foundPath = path
+			return filepath.SkipAll
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return foundPath, nil
+}
