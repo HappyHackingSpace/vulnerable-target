@@ -8,7 +8,7 @@
                                                     /___/        /___/
 ```
 
-**Create intentionally vulnerable environments for security testing, education, and research**
+## Create intentionally vulnerable environments for security testing, education, and research
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/HappyHackingSpace/vt?style=flat-square)](https://go.dev/)
 [![License](https://img.shields.io/github/license/HappyHackingSpace/vt?style=flat-square)](LICENSE)
@@ -58,7 +58,7 @@
 ### Install with Go
 
 ```bash
-go install github.com/happyhackingspace/vulnerable-target/cmd/vt@latest
+go install github.com/happyhackingspace/vt/cmd/vt@latest
 ```
 
 ### Build from Source
