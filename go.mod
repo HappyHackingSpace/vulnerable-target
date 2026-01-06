@@ -3,7 +3,7 @@ module github.com/happyhackingspace/vt
 go 1.24.0
 
 require (
-	github.com/compose-spec/compose-go/v2 v2.8.1
+	github.com/compose-spec/compose-go/v2 v2.10.0
 	github.com/docker/cli v28.3.3+incompatible
 	github.com/docker/compose/v2 v2.39.2
 	github.com/go-git/go-git/v5 v5.16.3
@@ -187,7 +187,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	go.uber.org/mock v0.5.2 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
