@@ -111,17 +111,20 @@ func loadTemplatesFromCategory(categoryPath, categoryName string) (map[string]Te
 			return nil
 		}
 
-		if !d.IsDir() {
-			return nil
-		}
-
 		if strings.HasPrefix(d.Name(), ".") {
-			return filepath.SkipDir
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		if d.Type()&os.ModeSymlink != 0 {
 			log.Debug().Msgf("skipping symlink: %s", d.Name())
 			return filepath.SkipDir
+		}
+
+		if !d.IsDir() {
+			return nil
 		}
 
 		relPath, err := filepath.Rel(categoryPath, path)
