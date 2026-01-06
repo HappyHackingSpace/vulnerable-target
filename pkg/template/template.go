@@ -149,33 +149,81 @@ func loadTemplatesFromDirectory(repoPath string) (map[string]Template, error) {
 	return templates, nil
 }
 
+// maxScanDepth limits the depth of recursive directory scanning to prevent
+// infinite loops from circular symlinks and excessive resource usage.
+const maxScanDepth = 10
+
 // loadTemplatesFromCategory loads all templates within a single category directory.
+// It recursively scans subdirectories to find templates using filepath.WalkDir.
 // Returns a map of templates indexed by their ID.
 func loadTemplatesFromCategory(categoryPath, categoryName string) (map[string]Template, error) {
 	templates := make(map[string]Template)
 
-	templateEntries, err := os.ReadDir(categoryPath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading category %s: %w", categoryName, err)
-	}
-
-	for _, entry := range templateEntries {
-		if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
-			continue
-		}
-
-		templatePath := filepath.Join(categoryPath, entry.Name())
-		tmpl, err := LoadTemplate(templatePath)
+	err := filepath.WalkDir(categoryPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return nil, fmt.Errorf("error loading template %s: %w", entry.Name(), err)
+			return err
 		}
-		if tmpl.ID != entry.Name() {
-			return nil, fmt.Errorf("template id '%s' and directory name '%s' should match", tmpl.ID, entry.Name())
+
+		if path == categoryPath {
+			return nil
 		}
-		templates[tmpl.ID] = tmpl
+
+		if strings.HasPrefix(d.Name(), ".") {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if d.Type()&os.ModeSymlink != 0 {
+			log.Debug().Msgf("skipping symlink: %s", d.Name())
+			return filepath.SkipDir
+		}
+
+		if !d.IsDir() {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(categoryPath, path)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path: %w", err)
+		}
+		depth := strings.Count(relPath, string(filepath.Separator)) + 1
+		if depth > maxScanDepth {
+			return fmt.Errorf("maximum directory depth (%d) exceeded at %s", maxScanDepth, path)
+		}
+
+		if isTemplateDirectory(path) {
+			tmpl, err := LoadTemplate(path)
+			if err != nil {
+				return fmt.Errorf("error loading template %s: %w", d.Name(), err)
+			}
+			if tmpl.ID != d.Name() {
+				return fmt.Errorf("template id '%s' and directory name '%s' should match", tmpl.ID, d.Name())
+			}
+			if existing, exists := templates[tmpl.ID]; exists {
+				return fmt.Errorf("duplicate template id '%s' found (already loaded: %s)", tmpl.ID, existing.Info.Name)
+			}
+			templates[tmpl.ID] = tmpl
+			return filepath.SkipDir
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error scanning category %s: %w", categoryName, err)
 	}
 
 	return templates, nil
+}
+
+// isTemplateDirectory checks if a directory contains an index.yaml file,
+// indicating it's a template directory.
+func isTemplateDirectory(dirPath string) bool {
+	indexPath := filepath.Join(dirPath, "index.yaml")
+	_, err := os.Stat(indexPath)
+	return err == nil
 }
 
 // SyncTemplates downloads or updates all templates from the remote repository.
