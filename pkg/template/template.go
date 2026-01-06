@@ -361,7 +361,7 @@ func GetDockerComposePath(templateID, repoPath string) (composePath string, work
 
 		composePath = filepath.Join(templateDir, providerConfig.Path)
 		if _, statErr := os.Stat(composePath); statErr != nil {
-			continue
+			return "", "", fmt.Errorf("template %q has invalid docker-compose path %q: %w", templateID, composePath, statErr)
 		}
 
 		return composePath, filepath.Dir(composePath), nil
