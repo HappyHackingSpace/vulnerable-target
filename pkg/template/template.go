@@ -324,6 +324,7 @@ func GetDockerComposePath(templateID, repoPath string) (composePath string, work
 			categoryPath := filepath.Join(repoPath, entry.Name())
 			found, err := findTemplateInCategory(categoryPath, templateID)
 			if err != nil {
+				log.Debug().Err(err).Msgf("failed to find template %q in category %q", templateID, categoryPath)
 				continue
 			}
 			if found != "" {
@@ -336,6 +337,7 @@ func GetDockerComposePath(templateID, repoPath string) (composePath string, work
 		// Load the template to get provider config
 		tmpl, err := LoadTemplate(templateDir)
 		if err != nil {
+			log.Debug().Err(err).Msgf("failed to load template %q from directory %q", templateID, templateDir)
 			continue
 		}
 
@@ -374,6 +376,18 @@ func findTemplateInCategory(categoryPath, templateID string) (string, error) {
 	err := filepath.WalkDir(categoryPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+
+		// Enforce depth limit consistent with loadTemplatesFromCategory
+		if path != categoryPath {
+			relPath, err := filepath.Rel(categoryPath, path)
+			if err != nil {
+				return fmt.Errorf("failed to get relative path: %w", err)
+			}
+			depth := strings.Count(relPath, string(filepath.Separator)) + 1
+			if depth > maxScanDepth {
+				return fmt.Errorf("maximum directory depth (%d) exceeded at %s", maxScanDepth, path)
+			}
 		}
 
 		if strings.HasPrefix(d.Name(), ".") {
