@@ -2,9 +2,9 @@
 package registry
 
 import (
-	"github.com/happyhackingspace/vulnerable-target/internal/state"
-	"github.com/happyhackingspace/vulnerable-target/pkg/provider"
-	"github.com/happyhackingspace/vulnerable-target/pkg/provider/dockercompose"
+	"github.com/happyhackingspace/vt/internal/state"
+	"github.com/happyhackingspace/vt/pkg/provider"
+	"github.com/happyhackingspace/vt/pkg/provider/dockercompose"
 )
 
 // NewProviders creates and returns a map of all available providers.

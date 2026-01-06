@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
+	tmpl "github.com/happyhackingspace/vt/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )

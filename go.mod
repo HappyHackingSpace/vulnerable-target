@@ -1,4 +1,4 @@
-module github.com/happyhackingspace/vulnerable-target
+module github.com/happyhackingspace/vt
 
 go 1.24.0
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/happyhackingspace/vulnerable-target/pkg/store"
+	"github.com/happyhackingspace/vt/pkg/store"
 )
 
 // Deployment represents the status of an environment on a specified provider

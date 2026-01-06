@@ -15,8 +15,8 @@ import (
 	"github.com/docker/cli/cli/flags"
 	"github.com/docker/compose/v2/pkg/api"
 	"github.com/docker/compose/v2/pkg/compose"
-	"github.com/happyhackingspace/vulnerable-target/internal/app"
-	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
+	"github.com/happyhackingspace/vt/internal/app"
+	tmpl "github.com/happyhackingspace/vt/pkg/template"
 )
 
 func createDockerCLI() (command.Cli, error) {

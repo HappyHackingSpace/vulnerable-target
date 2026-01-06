@@ -58,7 +58,7 @@
 ### Install with Go
 
 ```bash
-go install github.com/happyhackingspace/vulnerable-target/cmd/vt@latest
+go install github.com/happyhackingspace/vt/cmd/vt@latest
 ```
 
 ### Build from Source

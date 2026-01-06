@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	templ "github.com/happyhackingspace/vulnerable-target/pkg/template"
+	templ "github.com/happyhackingspace/vt/pkg/template"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )

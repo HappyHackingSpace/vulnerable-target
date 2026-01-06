@@ -2,7 +2,7 @@
 package provider
 
 import (
-	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
+	tmpl "github.com/happyhackingspace/vt/pkg/template"
 )
 
 // Provider defines the interface for managing vulnerable target environments.

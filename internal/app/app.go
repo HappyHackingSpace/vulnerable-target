@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/happyhackingspace/vulnerable-target/internal/state"
-	"github.com/happyhackingspace/vulnerable-target/pkg/provider"
-	"github.com/happyhackingspace/vulnerable-target/pkg/template"
+	"github.com/happyhackingspace/vt/internal/state"
+	"github.com/happyhackingspace/vt/pkg/provider"
+	"github.com/happyhackingspace/vt/pkg/template"
 )
 
 // Config holds application configuration.

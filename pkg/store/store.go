@@ -4,7 +4,7 @@ package store
 import (
 	"errors"
 
-	"github.com/happyhackingspace/vulnerable-target/pkg/store/disk"
+	"github.com/happyhackingspace/vt/pkg/store/disk"
 )
 
 // Type represents the type of storage backend
