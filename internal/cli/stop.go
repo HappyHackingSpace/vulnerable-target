@@ -13,7 +13,7 @@ import (
 func (c *CLI) newStopCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stop",
-		Short: "Stop vulnerable environment by template id and provider",
+		Short: "Stop vulnerable environment by template id or tags",
 		Run: func(cmd *cobra.Command, _ []string) {
 			providerName, err := cmd.Flags().GetString("provider")
 			if err != nil {
@@ -25,22 +25,63 @@ func (c *CLI) newStopCommand() *cobra.Command {
 				log.Fatal().Msgf("%v", err)
 			}
 
+			tagsStr, err := cmd.Flags().GetString("tags")
+			if err != nil {
+				log.Fatal().Msgf("%v", err)
+			}
+
+			if templateID == "" && tagsStr == "" {
+				log.Fatal().Msg("either --id or --tags must be provided")
+			}
+			if templateID != "" && tagsStr != "" {
+				log.Fatal().Msg("--id and --tags are mutually exclusive")
+			}
+
 			provider, ok := c.app.GetProvider(providerName)
 			if !ok {
 				log.Fatal().Msgf("provider %s not found", providerName)
 			}
 
-			template, err := tmpl.GetByID(c.app.Templates, templateID)
-			if err != nil {
-				log.Fatal().Msgf("%v", err)
-			}
+			if templateID != "" {
+				template, err := tmpl.GetByID(c.app.Templates, templateID)
+				if err != nil {
+					log.Fatal().Msgf("%v", err)
+				}
 
-			err = provider.Stop(template)
-			if err != nil {
-				log.Fatal().Msgf("%v", err)
-			}
+				err = provider.Stop(template)
+				if err != nil {
+					log.Fatal().Msgf("%v", err)
+				}
 
-			log.Info().Msgf("%s template stopped on %s", templateID, providerName)
+				log.Info().Msgf("%s template stopped on %s", templateID, providerName)
+			} else {
+				tags := strings.Split(tagsStr, ",")
+				templates, err := tmpl.GetByTags(c.app.Templates, tags)
+				if err != nil {
+					log.Fatal().Msgf("%v", err)
+				}
+
+				log.Info().Msgf("found %d templates matching tags: %s", len(templates), tagsStr)
+
+				var failed []string
+				var stopped int
+				for _, template := range templates {
+					if err := provider.Stop(template); err != nil {
+						log.Error().Msgf("failed to stop %s: %v", template.ID, err)
+						failed = append(failed, template.ID)
+						continue
+					}
+					stopped++
+					log.Info().Msgf("%s template stopped on %s", template.ID, providerName)
+				}
+
+				if len(failed) > 0 {
+					log.Warn().Msgf("failed to stop %d templates: %s", len(failed), strings.Join(failed, ", "))
+				}
+				if stopped > 0 {
+					log.Info().Msgf("successfully stopped %d templates", stopped)
+				}
+			}
 		},
 	}
 
@@ -51,13 +92,8 @@ func (c *CLI) newStopCommand() *cobra.Command {
 	cmd.Flags().String("id", "",
 		"Specify a template ID for targeted vulnerable environment")
 
-	if err := cmd.MarkFlagRequired("provider"); err != nil {
-		log.Fatal().Msgf("%v", err)
-	}
-
-	if err := cmd.MarkFlagRequired("id"); err != nil {
-		log.Fatal().Msgf("%v", err)
-	}
+	cmd.Flags().StringP("tags", "t", "",
+		"Specify comma-separated tags to stop all matching templates (e.g., --tags sqli,xss)")
 
 	return cmd
 }
