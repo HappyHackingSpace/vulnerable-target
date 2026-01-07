@@ -9,7 +9,7 @@ require (
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/jedib0t/go-pretty/v6 v6.6.6
 	github.com/rs/zerolog v1.33.0
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	go.etcd.io/bbolt v1.4.3
 	gopkg.in/yaml.v3 v3.0.1
@@ -156,7 +156,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
-	github.com/spf13/pflag v1.0.7 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/theupdateframework/notary v0.7.0 // indirect
 	github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375 // indirect
 	github.com/tonistiigi/dchapes-mode v0.0.0-20250318174251-73d941a28323 // indirect
