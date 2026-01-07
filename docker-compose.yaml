@@ -1,4 +1,3 @@
-# Run the vt CLI in a container with access to the host Docker daemon.
 services:
   vt:
     build:
