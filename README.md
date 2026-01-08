@@ -159,7 +159,6 @@ Templates are automatically cloned to `~/vt-templates` on first run.
 
 | | Resource | Description |
 |:--:|----------|-------------|
-| 📖 | [Wiki](https://github.com/HappyHackingSpace/vt/wiki) | Full documentation and guides |
 | 📦 | [Templates](https://github.com/HappyHackingSpace/vt-templates) | Browse all available templates |
 | 🤝 | [Contributing](./CONTRIBUTING.md) | Contribution guidelines |
 | 🐛 | [Issues](https://github.com/HappyHackingSpace/vt/issues) | Report bugs or request features |

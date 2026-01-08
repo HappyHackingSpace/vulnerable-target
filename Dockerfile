@@ -1,5 +1,5 @@
 # Build stage for development tools
-FROM golang:1.23.12-bullseye AS dev-tools
+FROM golang:1.24.0-bullseye AS dev-tools
 
 # Install build dependencies
 RUN apt-get update && \
@@ -11,7 +11,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/* && \
     pip3 install --no-cache-dir pre-commit
 
-# Install Go tools with versions compatible with Go 1.23.12
+# Install Go tools with versions compatible with Go 1.24.0
 RUN go install mvdan.cc/gofumpt@v0.5.0 && \
     go install github.com/kisielk/errcheck@v1.6.3 && \
     go install github.com/go-delve/delve/cmd/dlv@v1.22.0 && \
@@ -19,7 +19,7 @@ RUN go install mvdan.cc/gofumpt@v0.5.0 && \
     go install github.com/securego/gosec/v2/cmd/gosec@v2.19.0
 
 # Builder stage
-FROM golang:1.23.12-bullseye AS builder
+FROM golang:1.24.0-bullseye AS builder
 
 WORKDIR /app
 
@@ -55,9 +55,6 @@ WORKDIR /app
 
 # Copy the binary from builder
 COPY --from=builder /go/bin/vulnerable-target .
-
-# Copy templates
-COPY --from=builder /app/templates/ ./templates/
 
 # Set the entrypoint to bash by default
 ENTRYPOINT ["/bin/bash"]
