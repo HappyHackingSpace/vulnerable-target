@@ -15,6 +15,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+
 replace github.com/docker/buildx => github.com/docker/buildx v0.12.0-rc2.0.20231219140829-617f538cb315
 
 replace github.com/moby/buildkit => github.com/moby/buildkit v0.13.0-beta1.0.20231219135447-957cb50df991
@@ -126,7 +128,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/buildkit v0.23.0-rc1.0.20250618182037-9b91d20367db // indirect
-
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/spdystream v0.5.0 // indirect
