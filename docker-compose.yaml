@@ -1,0 +1,12 @@
+services:
+  vt:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: "vulnerable-target"
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./:/app
+      - /var/run/docker.sock:/var/run/docker.sock
