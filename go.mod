@@ -4,14 +4,15 @@ go 1.24.9
 
 require (
 	github.com/compose-spec/compose-go/v2 v2.10.0
-	github.com/docker/cli v25.0.3+incompatible
-	github.com/docker/compose/v2 v2.24.6
+	github.com/docker/cli v25.0.4-0.20240305161310-2bf4225ad269+incompatible
+	github.com/docker/compose/v2 v2.25.0
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/jedib0t/go-pretty/v6 v6.7.8
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	go.etcd.io/bbolt v1.4.3
+	golang.org/x/term v0.34.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -196,7 +197,6 @@ require (
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
