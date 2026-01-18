@@ -127,6 +127,7 @@ func TestTemplateMatchesTags(t *testing.T) {
 	// Empty filter tags
 	assert.False(t, templateMatchesTags(tmpl, []string{}))
 	assert.False(t, templateMatchesTags(tmpl, []string{"  ", ""}))
+}
 
 // createTestTemplate creates a template directory with an index.yaml file
 func createTestTemplate(t *testing.T, basePath, templateID string) {
