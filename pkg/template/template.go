@@ -340,6 +340,8 @@ func templateMatchesTags(tmpl *Template, filterTags []string) bool {
 		}
 	}
 	return false
+}
+
 // GetDockerComposePath finds and returns the docker-compose file path for a given template ID.
 // It searches through all category directories in the templates repository to locate the template.
 // Returns the absolute path to the compose file and the working directory.
