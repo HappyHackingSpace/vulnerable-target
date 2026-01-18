@@ -4,9 +4,9 @@ package dockercompose
 import (
 	"fmt"
 
-	"github.com/happyhackingspace/vulnerable-target/internal/state"
-	"github.com/happyhackingspace/vulnerable-target/pkg/provider"
-	tmpl "github.com/happyhackingspace/vulnerable-target/pkg/template"
+	"github.com/happyhackingspace/vt/internal/state"
+	"github.com/happyhackingspace/vt/pkg/provider"
+	tmpl "github.com/happyhackingspace/vt/pkg/template"
 )
 
 var _ provider.Provider = &DockerCompose{}

@@ -59,6 +59,9 @@ jobs:
       - name: Run gosec
         run: gosec ./...
 
+      - name: Run typos
+        uses: crate-ci/typos@master
+
   release:
     name: "🎉 Release"
     runs-on: ubuntu-latest

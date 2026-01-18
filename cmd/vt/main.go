@@ -2,13 +2,13 @@
 package main
 
 import (
-	"github.com/happyhackingspace/vulnerable-target/internal/app"
-	"github.com/happyhackingspace/vulnerable-target/internal/cli"
-	"github.com/happyhackingspace/vulnerable-target/internal/logger"
-	"github.com/happyhackingspace/vulnerable-target/internal/state"
-	"github.com/happyhackingspace/vulnerable-target/pkg/provider/registry"
-	"github.com/happyhackingspace/vulnerable-target/pkg/store/disk"
-	"github.com/happyhackingspace/vulnerable-target/pkg/template"
+	"github.com/happyhackingspace/vt/internal/app"
+	"github.com/happyhackingspace/vt/internal/cli"
+	"github.com/happyhackingspace/vt/internal/logger"
+	"github.com/happyhackingspace/vt/internal/state"
+	"github.com/happyhackingspace/vt/pkg/provider/registry"
+	"github.com/happyhackingspace/vt/pkg/store/disk"
+	"github.com/happyhackingspace/vt/pkg/template"
 	"github.com/rs/zerolog/log"
 )
 

@@ -49,6 +49,63 @@ type Cvss struct {
 	Metrics string `yaml:"metrics"`
 }
 
+// String returns template fields as a table
+func (t Template) String() string {
+	tw := table.NewWriter()
+	tw.AppendRow(table.Row{"ID", t.ID})
+	tw.AppendRow(table.Row{"Name", t.Info.Name})
+	tw.AppendRow(table.Row{"Description", t.Info.Description})
+	tw.AppendRow(table.Row{"Author", t.Info.Author})
+	tw.AppendRow(table.Row{"Type", t.Info.Type})
+	tw.AppendRow(table.Row{"Targets", formatList(t.Info.Targets)})
+	tw.AppendRow(table.Row{"Affected Versions", formatList(t.Info.AffectedVersions)})
+	tw.AppendRow(table.Row{"Fixed Version", t.Info.FixedVersion})
+	tw.AppendRow(table.Row{"CWE", t.Info.Cwe})
+	tw.AppendRow(table.Row{"CVSS Score", t.Info.Cvss.Score})
+	tw.AppendRow(table.Row{"CVSS Metrics", t.Info.Cvss.Metrics})
+	tw.AppendRow(table.Row{"Tags", formatList(t.Info.Tags)})
+	tw.AppendRow(table.Row{"References", formatList(t.Info.References)})
+	tw.AppendRow(table.Row{"Proof of Concept", formatPoc(t.ProofOfConcept)})
+	tw.AppendRow(table.Row{"Remediation", formatList(t.Remediation)})
+	tw.AppendRow(table.Row{"Providers", formatProviders(t.Providers)})
+	tw.AppendRow(table.Row{"Post Install", formatList(t.PostInstall)})
+
+	tw.Style().Options.DrawBorder = true
+	tw.Style().Options.SeparateRows = true
+	tw.Style().Options.SeparateColumns = true
+
+	return tw.Render()
+}
+
+func formatPoc(poc map[string][]string) string {
+	if len(poc) == 0 {
+		return ""
+	}
+	var parts []string
+	for key, values := range poc {
+		parts = append(parts, fmt.Sprintf("%s: %s", key, strings.Join(values, ", ")))
+	}
+	return strings.Join(parts, "\n")
+}
+
+func formatProviders(providers map[string]ProviderConfig) string {
+	if len(providers) == 0 {
+		return ""
+	}
+	names := make([]string, 0, len(providers))
+	for name := range providers {
+		names = append(names, name)
+	}
+	return strings.Join(names, "\n")
+}
+
+func formatList(items []string) string {
+	if len(items) == 0 {
+		return ""
+	}
+	return strings.Join(items, "\n")
+}
+
 // LoadTemplates loads all templates from the given repository path.
 // If the repository doesn't exist, it clones it first.
 // Returns a map of templates indexed by their ID.
@@ -92,33 +149,81 @@ func loadTemplatesFromDirectory(repoPath string) (map[string]Template, error) {
 	return templates, nil
 }
 
+// maxScanDepth limits the depth of recursive directory scanning to prevent
+// infinite loops from circular symlinks and excessive resource usage.
+const maxScanDepth = 10
+
 // loadTemplatesFromCategory loads all templates within a single category directory.
+// It recursively scans subdirectories to find templates using filepath.WalkDir.
 // Returns a map of templates indexed by their ID.
 func loadTemplatesFromCategory(categoryPath, categoryName string) (map[string]Template, error) {
 	templates := make(map[string]Template)
 
-	templateEntries, err := os.ReadDir(categoryPath)
-	if err != nil {
-		return nil, fmt.Errorf("error reading category %s: %w", categoryName, err)
-	}
-
-	for _, entry := range templateEntries {
-		if strings.HasPrefix(entry.Name(), ".") || !entry.IsDir() {
-			continue
-		}
-
-		templatePath := filepath.Join(categoryPath, entry.Name())
-		tmpl, err := LoadTemplate(templatePath)
+	err := filepath.WalkDir(categoryPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return nil, fmt.Errorf("error loading template %s: %w", entry.Name(), err)
+			return err
 		}
-		if tmpl.ID != entry.Name() {
-			return nil, fmt.Errorf("template id '%s' and directory name '%s' should match", tmpl.ID, entry.Name())
+
+		if path == categoryPath {
+			return nil
 		}
-		templates[tmpl.ID] = tmpl
+
+		if strings.HasPrefix(d.Name(), ".") {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if d.Type()&os.ModeSymlink != 0 {
+			log.Debug().Msgf("skipping symlink: %s", d.Name())
+			return filepath.SkipDir
+		}
+
+		if !d.IsDir() {
+			return nil
+		}
+
+		relPath, err := filepath.Rel(categoryPath, path)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path: %w", err)
+		}
+		depth := strings.Count(relPath, string(filepath.Separator)) + 1
+		if depth > maxScanDepth {
+			return fmt.Errorf("maximum directory depth (%d) exceeded at %s", maxScanDepth, path)
+		}
+
+		if isTemplateDirectory(path) {
+			tmpl, err := LoadTemplate(path)
+			if err != nil {
+				return fmt.Errorf("error loading template %s: %w", d.Name(), err)
+			}
+			if tmpl.ID != d.Name() {
+				return fmt.Errorf("template id '%s' and directory name '%s' should match", tmpl.ID, d.Name())
+			}
+			if existing, exists := templates[tmpl.ID]; exists {
+				return fmt.Errorf("duplicate template id '%s' found (already loaded: %s)", tmpl.ID, existing.Info.Name)
+			}
+			templates[tmpl.ID] = tmpl
+			return filepath.SkipDir
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error scanning category %s: %w", categoryName, err)
 	}
 
 	return templates, nil
+}
+
+// isTemplateDirectory checks if a directory contains an index.yaml file,
+// indicating it's a template directory.
+func isTemplateDirectory(dirPath string) bool {
+	indexPath := filepath.Join(dirPath, "index.yaml")
+	_, err := os.Stat(indexPath)
+	return err == nil
 }
 
 // SyncTemplates downloads or updates all templates from the remote repository.

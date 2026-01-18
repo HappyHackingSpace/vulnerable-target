@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/happyhackingspace/vulnerable-target/internal/app"
-	"github.com/happyhackingspace/vulnerable-target/internal/banner"
-	"github.com/happyhackingspace/vulnerable-target/internal/logger"
+	"github.com/happyhackingspace/vt/internal/app"
+	"github.com/happyhackingspace/vt/internal/banner"
+	"github.com/happyhackingspace/vt/internal/logger"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -67,6 +67,7 @@ func (c *CLI) setupCommands() {
 	c.rootCmd.AddCommand(c.newStopCommand())
 	c.rootCmd.AddCommand(c.newPsCommand())
 	c.rootCmd.AddCommand(c.newTemplateCommand())
+	c.rootCmd.AddCommand(c.newInspectCommand())
 }
 
 // Run executes the CLI and returns any error.
