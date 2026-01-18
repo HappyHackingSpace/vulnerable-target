@@ -55,7 +55,14 @@ func (c *CLI) setupCommands() {
 		},
 		SilenceErrors: true,
 	}
-	c.rootCmd.SetHelpTemplate(banner.Banner() + "\n" + c.rootCmd.HelpTemplate())
+
+	// Custom help function that prints animated banner first
+	defaultHelp := c.rootCmd.HelpFunc()
+	c.rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
+		banner.Print()
+		fmt.Println()
+		defaultHelp(cmd, args)
+	})
 
 	// Setup root flags
 	c.rootCmd.PersistentFlags().StringP("verbosity", "v", zerolog.InfoLevel.String(),
