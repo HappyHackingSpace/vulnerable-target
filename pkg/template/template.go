@@ -302,6 +302,46 @@ func GetByID(templates map[string]Template, templateID string) (*Template, error
 	return &tmpl, nil
 }
 
+// GetByTags retrieves all templates that match any of the given tags.
+// Tags are matched case-insensitively and support substring matching.
+// Returns an error if no templates match the given tags.
+func GetByTags(templates map[string]Template, tags []string) ([]*Template, error) {
+	if len(tags) == 0 {
+		return nil, fmt.Errorf("no tags provided")
+	}
+
+	var matched []*Template
+	for _, tmpl := range templates {
+		if templateMatchesTags(&tmpl, tags) {
+			t := tmpl // Create a copy to avoid pointer issues
+			matched = append(matched, &t)
+		}
+	}
+
+	if len(matched) == 0 {
+		return nil, fmt.Errorf("no templates found matching tags: %s", strings.Join(tags, ", "))
+	}
+
+	return matched, nil
+}
+
+// templateMatchesTags checks if a template matches any of the given tags.
+func templateMatchesTags(tmpl *Template, filterTags []string) bool {
+	for _, filterTag := range filterTags {
+		filterTag = strings.TrimSpace(filterTag)
+		if filterTag == "" {
+			continue
+		}
+		for _, templateTag := range tmpl.Info.Tags {
+			if strings.EqualFold(templateTag, filterTag) ||
+				strings.Contains(strings.ToLower(templateTag), strings.ToLower(filterTag)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetDockerComposePath finds and returns the docker-compose file path for a given template ID.
 // It searches through all category directories in the templates repository to locate the template.
 // Returns the absolute path to the compose file and the working directory.
